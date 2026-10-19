@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bibledl · Adivina el personaje bíblico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     COLORES Y ESTILO GENERAL
+     ========================================================= */
+  :root {
+    --oro: #c9a227;
+    --oro-claro: #f3dc8a;
+    --oro-oscuro: #8a6512;
+    --marron: #5a3a1e;
+    --tinta: #3a2512;
+    --tinta-suave: #6b4a2b;
+    --azul: #1f3a5f;
+    --purpura: #5b2a6e;
+    --oliva: #5f6f2a;
+    --ocre: #b8862a;
+    --granate: #7a1f26;
+    --neutro: #8b7d66;
+    --sombra: 0 6px 24px rgba(70, 40, 10, .25);
+  }
+  .verde    { --cf: var(--oliva); }
+  .amarillo { --cf: var(--ocre); }
+  .rojo     { --cf: var(--granate); }
+  .neutro   { --cf: var(--neutro); }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  /* Fondo de pergamino envejecido hecho solo con CSS */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--tinta);
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.45;
+    background-color: #e8d5ad;
+    background-image:
+      radial-gradient(ellipse at 50% 40%, rgba(255, 248, 225, .65) 0%, rgba(255, 248, 225, 0) 60%),
+      radial-gradient(ellipse at 0% 0%, rgba(120, 75, 25, .28), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(120, 75, 25, .32), transparent 50%),
+      radial-gradient(ellipse at 100% 0%, rgba(140, 90, 30, .18), transparent 40%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.27  0 0 0 0 0.1  0 0 0 0.32 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-attachment: fixed;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 170px rgba(90, 50, 15, .55);
+    z-index: 0;
+  }
+
+  /* Marco principal con bordes ornamentados */
+  .marco {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 18px auto;
+    padding: 30px 24px 30px;
+    background: linear-gradient(rgba(252, 243, 220, .72), rgba(242, 226, 192, .72));
+    border: 3px double var(--oro-oscuro);
+    border-radius: 6px;
+    box-shadow: var(--sombra), inset 0 0 0 6px rgba(201, 162, 39, .16), inset 0 0 70px rgba(140, 95, 35, .2);
+  }
+  .esquina { position: absolute; width: 46px; height: 46px; color: var(--oro-oscuro); opacity: .85; }
+  .esquina.ai { top: 6px; left: 6px; }
+  .esquina.ad { top: 6px; right: 6px; transform: scaleX(-1); }
+  .esquina.bi { bottom: 6px; left: 6px; transform: scaleY(-1); }
+  .esquina.bd { bottom: 6px; right: 6px; transform: scale(-1, -1); }
+
+  /* =========================================================
+     CABECERA
+     ========================================================= */
+  header { text-align: center; }
+  .cabecera-titulo { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .lampara { width: 72px; height: 58px; flex: none; }
+  .lampara.der { transform: scaleX(-1); }
+  .llama { transform-box: fill-box; transform-origin: 50% 100%; animation: parpadeo 2.4s ease-in-out infinite; }
+  .halo { animation: halo 2.4s ease-in-out infinite; }
+  @keyframes parpadeo {
+    0%, 100% { transform: scale(1, 1) rotate(0deg); }
+    30% { transform: scale(.94, 1.06) rotate(-2deg); }
+    60% { transform: scale(1.04, .95) rotate(2deg); }
+  }
+  @keyframes halo { 50% { opacity: .55; } }
+
+  .titulo {
+    font-family: "Cinzel Decorative", "Cinzel", serif;
+    font-weight: 900;
+    font-size: clamp(2.3rem, 10vw, 4.6rem);
+    margin: 0;
+    letter-spacing: .04em;
+    line-height: 1.05;
+    background: linear-gradient(180deg, #fff1b8 0%, #e8c25a 35%, #b8891c 62%, #7d5a10 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 6px rgba(240, 200, 90, .55)) drop-shadow(0 2px 1px rgba(60, 35, 5, .5));
+    animation: brillo 5s ease-in-out infinite;
+  }
+  .titulo.resplandor { animation: resplandor 1.2s ease-in-out 2; }
+  @keyframes brillo {
+    50% { filter: drop-shadow(0 0 14px rgba(255, 215, 110, .85)) drop-shadow(0 2px 1px rgba(60, 35, 5, .5)); }
+  }
+  @keyframes resplandor {
+    50% { filter: drop-shadow(0 0 28px rgba(255, 225, 130, 1)) drop-shadow(0 2px 1px rgba(60, 35, 5, .5)); }
+  }
+  .subtitulo {
+    font-family: "Cinzel", serif;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-size: .8rem;
+    color: var(--tinta-suave);
+    margin: 6px 0 0;
+  }
+  .botones-cabecera { display: flex; justify-content: center; gap: 14px; margin-top: 14px; }
+
+  /* Botón tipo sello de cera */
+  .sello {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    display: grid;
+    place-items: center;
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #f6e3c0;
+    background: radial-gradient(circle at 35% 30%, #b8434a 0%, #8a242c 45%, #5c1218 100%);
+    box-shadow: 0 0 0 3px #7a1f26, 2px 3px 7px rgba(60, 20, 10, .45),
+                inset -3px -4px 8px rgba(0, 0, 0, .35), inset 3px 3px 6px rgba(255, 180, 170, .25);
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .sello::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 210, 190, .35);
+  }
+  .sello:hover { transform: rotate(-10deg) scale(1.07); box-shadow: 0 0 0 3px #7a1f26, 0 0 16px rgba(201, 162, 39, .6), inset -3px -4px 8px rgba(0, 0, 0, .35), inset 3px 3px 6px rgba(255, 180, 170, .25); }
+  .sello.purpura {
+    background: radial-gradient(circle at 35% 30%, #8a4fa0 0%, #5b2a6e 50%, #36173f 100%);
+    box-shadow: 0 0 0 3px #4a2159, 2px 3px 7px rgba(40, 15, 50, .45),
+                inset -3px -4px 8px rgba(0, 0, 0, .35), inset 3px 3px 6px rgba(230, 190, 255, .2);
+  }
+  .sello.pequeno { width: 36px; height: 36px; font-size: .9rem; }
+
+  /* Botón tipo placa dorada */
+  .placa {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    letter-spacing: .06em;
+    font-size: .95rem;
+    color: #3a2512;
+    padding: 11px 20px;
+    border-radius: 6px;
+    border: 1px solid #7a5a10;
+    cursor: pointer;
+    background: linear-gradient(180deg, #f8e49a 0%, #d9b443 45%, #b48a1e 55%, #d2aa3c 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 0 rgba(90, 60, 5, .35), 0 2px 6px rgba(70, 40, 10, .35);
+    text-shadow: 0 1px 0 rgba(255, 240, 190, .6);
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .placa:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 0 rgba(90, 60, 5, .35), 0 6px 14px rgba(70, 40, 10, .35), 0 0 16px rgba(240, 200, 90, .55);
+  }
+  .placa:active { transform: translateY(0); }
+  .placa.secundaria {
+    background: rgba(255, 248, 228, .7);
+    color: var(--granate);
+    border-color: rgba(122, 31, 38, .55);
+    font-size: .82rem;
+    padding: 8px 16px;
+    box-shadow: 0 1px 3px rgba(70, 40, 10, .2);
+    text-shadow: none;
+  }
+
+  /* Pestañas de modos */
+  .modos { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0 4px; }
+  .modo {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: .9rem;
+    letter-spacing: .05em;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--oro-oscuro);
+    background: rgba(255, 248, 228, .65);
+    color: var(--tinta-suave);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .25s, color .25s, box-shadow .25s, transform .25s;
+  }
+  .modo:hover { background: rgba(255, 240, 200, .95); color: var(--tinta); box-shadow: 0 0 12px rgba(201, 162, 39, .45); transform: translateY(-1px); }
+  .modo.activo {
+    background: linear-gradient(180deg, #6d3784, #4a2159);
+    color: var(--oro-claro);
+    border-color: var(--oro);
+    box-shadow: 0 0 0 2px rgba(201, 162, 39, .35), 0 4px 10px rgba(60, 20, 70, .35);
+  }
+  .modo .hecho { color: #a9bf55; font-size: 1rem; }
+
+  .separador { display: block; width: min(320px, 80%); height: 28px; margin: 12px auto; color: var(--oro-oscuro); }
+
+  /* =========================================================
+     TARJETAS DE PISTA
+     ========================================================= */
+  .tarjeta {
+    position: relative;
+    max-width: 640px;
+    margin: 6px auto 18px;
+    padding: 18px 20px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255, 250, 235, .88), rgba(245, 232, 200, .88));
+    border: 1px solid rgba(138, 101, 18, .6);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .35), inset 0 0 0 5px rgba(138, 101, 18, .25), 0 3px 10px rgba(70, 40, 10, .15);
+  }
+  .tarjeta h2 { font-family: "Cinzel", serif; font-size: 1.15rem; margin: 0 0 6px; color: var(--purpura); letter-spacing: .04em; }
+  .tarjeta p { margin: 6px 0; }
+  .intentos-texto { font-family: "Cinzel", serif; font-size: .85rem; color: var(--tinta-suave); }
+  .leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: .9rem; margin-top: 10px; }
+  .leyenda span { display: inline-flex; align-items: center; gap: 5px; }
+  .muestra { display: inline-block; width: 16px; height: 16px; border-radius: 4px; background: var(--cf); border: 1px solid rgba(0, 0, 0, .25); }
+
+  /* Rollo de pergamino (modo Versículo) */
+  .rollo { margin-top: 22px; margin-bottom: 26px; padding: 26px 26px 22px; }
+  .rollo::before, .rollo::after {
+    content: "";
+    position: absolute;
+    left: -12px; right: -12px;
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #c18a3c, #6b4214 55%, #a8742e);
+    box-shadow: 0 2px 4px rgba(60, 35, 10, .4);
+  }
+  .rollo::before { top: -9px; }
+  .rollo::after { bottom: -9px; }
+  .cita { font-style: italic; font-size: 1.35rem; line-height: 1.5; margin: 6px 0 10px; color: var(--tinta); }
+  .cita::before { content: "« "; color: var(--oro-oscuro); }
+  .cita::after { content: " »"; color: var(--oro-oscuro); }
+  .referencia { font-family: "Cinzel", serif; font-size: .85rem; color: var(--tinta-suave); }
+  .pistas { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; }
+  .pistas li { padding: 7px 10px; border-top: 1px dashed rgba(138, 101, 18, .45); animation: aparecer .45s ease both; }
+  .pistas li b { font-family: "Cinzel", serif; font-size: .85rem; color: var(--purpura); }
+  .proxima-pista { font-size: .9rem; color: var(--tinta-suave); font-style: italic; }
+
+  /* Emojis (modo Emoji) */
+  .emojis { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 8px; }
+  .emoji {
+    width: 60px; height: 60px;
+    display: grid; place-items: center;
+    font-size: 2rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fffaf0, #efdcae);
+    border: 2px solid var(--oro);
+    box-shadow: 0 2px 6px rgba(70, 40, 10, .25), inset 0 0 8px rgba(201, 162, 39, .3);
+    animation: aparecer .5s ease both;
+  }
+  .emoji.oculto { font-family: "Cinzel", serif; color: var(--oro-oscuro); font-size: 1.4rem; background: rgba(90, 58, 30, .06); border-style: dashed; box-shadow: none; }
+
+  /* =========================================================
+     BUSCADOR CON AUTOCOMPLETADO
+     ========================================================= */
+  .buscador { position: relative; display: flex; gap: 8px; max-width: 540px; margin: 0 auto 16px; }
+  #entrada {
+    flex: 1;
+    min-width: 0;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 1.15rem;
+    padding: 12px 14px;
+    border: 2px solid var(--oro-oscuro);
+    border-radius: 6px;
+    background: #fffaf0;
+    color: var(--tinta);
+    box-shadow: inset 0 2px 5px rgba(90, 60, 20, .15);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  #entrada::placeholder { color: #a08866; font-style: italic; }
+  #entrada:focus { border-color: var(--purpura); box-shadow: inset 0 2px 5px rgba(90, 60, 20, .15), 0 0 0 3px rgba(91, 42, 110, .2); }
+  .sugerencias {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    margin: 4px 0 0;
+    padding: 4px;
+    list-style: none;
+    background: #fffaf0;
+    border: 1px solid var(--oro-oscuro);
+    border-radius: 6px;
+    box-shadow: var(--sombra);
+    z-index: 20;
+    max-height: 330px;
+    overflow-y: auto;
+  }
+  .sugerencias[hidden] { display: none; }
+  .sugerencias li { padding: 9px 12px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .sugerencias li.activa, .sugerencias li:hover { background: rgba(201, 162, 39, .25); }
+  .sugerencias li.vacio { cursor: default; color: var(--tinta-suave); font-style: italic; }
+  .sugerencias li.vacio:hover { background: none; }
+  .sugerencias small { font-family: "Cinzel", serif; color: var(--tinta-suave); font-size: .72rem; }
+
+  /* =========================================================
+     TABLERO (modos Clásico e Infinito)
+     ========================================================= */
+  .tablero { overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
+  .fila {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(84px, 1fr));
+    gap: 6px;
+    min-width: 540px;
+    max-width: 800px;
+    margin: 0 auto 6px;
+  }
+  .titulo-col {
+    font-family: "Cinzel", serif;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--marron);
+    padding: 4px 2px 6px;
+    border-bottom: 2px solid var(--oro);
+    align-self: end;
+  }
+  .celda {
+    --cf: var(--neutro);
+    position: relative;
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 6px;
+    background: var(--cf);
+    color: #fbf3df;
+    font-weight: 600;
+    font-size: .86rem;
+    line-height: 1.15;
+    border: 1px solid rgba(40, 20, 5, .35);
+    box-shadow: inset 0 0 14px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .15);
+    overflow: hidden;
+    word-break: break-word;
+  }
+  .celda.verde { --cf: var(--oliva); }
+  .celda.amarillo { --cf: var(--ocre); }
+  .celda.rojo { --cf: var(--granate); }
+  .celda.neutro { --cf: var(--neutro); }
+  .celda.nombre { --cf: var(--azul); font-family: "Cinzel", serif; font-size: .8rem; border: 1px solid var(--oro); }
+  .celda small { display: block; font-family: "EB Garamond", serif; font-size: .72rem; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .celda .txt { position: relative; z-index: 1; }
+  .celda .flecha { position: absolute; inset: 0; display: grid; place-items: center; font-size: 3.2rem; line-height: 1; opacity: .3; font-weight: 700; }
+  .celda.revela { animation: girar .55s ease-in-out both; animation-delay: calc(var(--i) * .3s); }
+  @keyframes girar {
+    0%    { transform: rotateX(0);     background: #d9c69a; color: transparent; }
+    49.9% { transform: rotateX(90deg); background: #d9c69a; color: transparent; }
+    50%   { transform: rotateX(90deg); background: var(--cf); color: #fbf3df; }
+    100%  { transform: rotateX(0);     background: var(--cf); color: #fbf3df; }
+  }
+
+  /* Lista de intentos (modos Versículo y Emoji) */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto 10px; }
+  .chip {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #fbf3df;
+    background: var(--granate);
+    border: 1px solid rgba(0, 0, 0, .25);
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, .2);
+    animation: aparecer .4s ease both;
+  }
+  .chip.bien { background: var(--oliva); }
+
+  /* =========================================================
+     PANEL DE VICTORIA
+     ========================================================= */
+  .victoria {
+    max-width: 620px;
+    margin: 6px auto 20px;
+    padding: 24px 20px;
+    text-align: center;
+    background: radial-gradient(ellipse at top, rgba(255, 244, 205, .97), rgba(242, 224, 180, .97));
+    border: 2px solid var(--oro);
+    border-radius: 10px;
+    box-shadow: 0 0 0 4px rgba(201, 162, 39, .25), 0 0 34px rgba(230, 190, 80, .5), var(--sombra);
+    animation: surgir .7s ease both;
+  }
+  .victoria[hidden] { display: none; }
+  .victoria .ornamento { font-size: 1.4rem; color: var(--oro); letter-spacing: .6em; }
+  .victoria h2 { font-family: "Cinzel Decorative", "Cinzel", serif; color: var(--purpura); margin: 4px 0; font-size: 1.6rem; }
+  .ganador { font-family: "Cinzel", serif; font-weight: 900; font-size: 1.7rem; color: var(--azul); margin: 6px 0; }
+  .victoria blockquote {
+    margin: 14px auto;
+    max-width: 520px;
+    font-style: italic;
+    font-size: 1.15rem;
+    padding: 10px 16px;
+    border-left: 3px solid var(--oro);
+    border-right: 3px solid var(--oro);
+    background: rgba(255, 255, 255, .35);
+  }
+  .victoria cite { display: block; font-style: normal; font-family: "Cinzel", serif; font-size: .8rem; color: var(--tinta-suave); margin-top: 6px; }
+  .acciones { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .cuenta { font-family: "Cinzel", serif; font-size: .85rem; color: var(--tinta-suave); margin: 16px 0 0; }
+  .reloj { font-weight: 700; color: var(--purpura); font-variant-numeric: tabular-nums; }
+
+  /* =========================================================
+     VENTANAS (Cómo jugar / Estadísticas)
+     ========================================================= */
+  .velo {
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 22, 8, .55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 50;
+  }
+  .velo.abierto { display: flex; animation: fundido .3s ease; }
+  .modal {
+    position: relative;
+    width: 100%;
+    max-width: 580px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: linear-gradient(#fbf3dd, #efdfb8);
+    border: 3px double var(--oro-oscuro);
+    border-radius: 8px;
+    padding: 26px 22px 22px;
+    box-shadow: var(--sombra);
+    animation: surgir .4s ease both;
+  }
+  .modal h2 { font-family: "Cinzel", serif; color: var(--purpura); text-align: center; margin: 0 0 8px; }
+  .modal h3 { font-family: "Cinzel", serif; color: var(--azul); font-size: 1rem; margin: 18px 0 6px; }
+  .modal ul { padding-left: 20px; margin: 6px 0; }
+  .modal li { margin: 5px 0; }
+  .modal .cerrar { position: absolute; top: 12px; right: 12px; }
+  .modal .centrado { text-align: center; margin-top: 18px; }
+  .epocas { font-size: .92rem; color: var(--tinta-suave); }
+  .estadisticas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .stat-bloque { text-align: center; padding: 12px 6px; border: 1px solid rgba(138, 101, 18, .4); border-radius: 6px; background: rgba(255, 255, 255, .35); }
+  .stat-bloque .num { display: block; font-family: "Cinzel", serif; font-weight: 900; font-size: 1.8rem; color: var(--azul); }
+  .tabla-stats { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .tabla-stats th, .tabla-stats td { padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(138, 101, 18, .3); }
+  .tabla-stats th { font-family: "Cinzel", serif; font-size: .78rem; color: var(--marron); }
+  .tabla-stats td:first-child, .tabla-stats th:first-child { text-align: left; }
+  .nota { font-size: .9rem; color: var(--tinta-suave); font-style: italic; text-align: center; }
+
+  /* Aviso flotante */
+  .aviso {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    background: var(--azul);
+    color: var(--oro-claro);
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--oro);
+    font-family: "Cinzel", serif;
+    font-size: .9rem;
+    transition: opacity .3s, transform .3s;
+    z-index: 60;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .aviso.ver { opacity: 1; transform: translateX(-50%); }
+
+  #celebracion { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+  .pie { text-align: center; margin-top: 18px; font-size: .95rem; color: var(--tinta-suave); }
+  .pie .reloj { color: var(--purpura); }
+
+  @keyframes surgir { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes aparecer { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: none; } }
+  @keyframes fundido { from { opacity: 0; } to { opacity: 1; } }
+
+  /* =========================================================
+     MÓVIL
+     ========================================================= */
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    .marco { margin: 8px; padding: 22px 12px 24px; }
+    .esquina { width: 32px; height: 32px; }
+    .lampara { width: 44px; height: 36px; }
+    .cabecera-titulo { gap: 6px; }
+    .fila { grid-template-columns: repeat(6, minmax(54px, 1fr)); min-width: 0; gap: 4px; }
+    .celda { min-height: 64px; font-size: .72rem; }
+    .celda.nombre { font-size: .68rem; }
+    .titulo-col { font-size: .58rem; letter-spacing: .02em; }
+    .cita { font-size: 1.18rem; }
+    .emoji { width: 50px; height: 50px; font-size: 1.6rem; }
+    .placa { padding: 10px 14px; }
+  }
+  @media (max-width: 520px) {
+    .modos { display: grid; grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 380px) {
+    .lampara { width: 34px; height: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Dibujos reutilizables (esquinas y rama de olivo) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="esquina" viewBox="0 0 60 60">
+      <path d="M4 56 V18 Q4 4 18 4 H56" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <path d="M12 56 V22 Q12 12 22 12 H56" fill="none" stroke="currentColor" stroke-width="1"/>
+      <path d="M18 32 Q18 18 32 18 Q24 22 24 32 Z" fill="currentColor"/>
+      <circle cx="12" cy="12" r="3.5" fill="currentColor"/>
+      <circle cx="4" cy="56" r="2" fill="currentColor"/>
+      <circle cx="56" cy="4" r="2" fill="currentColor"/>
+    </symbol>
+    <symbol id="olivo" viewBox="0 0 240 30">
+      <line x1="0" y1="15" x2="84" y2="15" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="156" y1="15" x2="240" y2="15" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="80" cy="15" r="2" fill="currentColor"/>
+      <circle cx="160" cy="15" r="2" fill="currentColor"/>
+      <path d="M88 17 Q120 9 152 17" fill="none" stroke="#6b5426" stroke-width="1.6"/>
+      <ellipse cx="98" cy="11" rx="7" ry="2.6" transform="rotate(-35 98 11)" fill="#6f7d35"/>
+      <ellipse cx="110" cy="8.5" rx="7" ry="2.6" transform="rotate(-20 110 8.5)" fill="#8a9a4a"/>
+      <ellipse cx="130" cy="8.5" rx="7" ry="2.6" transform="rotate(20 130 8.5)" fill="#8a9a4a"/>
+      <ellipse cx="142" cy="11" rx="7" ry="2.6" transform="rotate(35 142 11)" fill="#6f7d35"/>
+      <ellipse cx="104" cy="19.5" rx="7" ry="2.6" transform="rotate(30 104 19.5)" fill="#8a9a4a"/>
+      <ellipse cx="136" cy="19.5" rx="7" ry="2.6" transform="rotate(-30 136 19.5)" fill="#8a9a4a"/>
+      <circle cx="115" cy="18" r="2.6" fill="#3d4a1e"/>
+      <circle cx="125" cy="18" r="2.6" fill="#3d4a1e"/>
+      <circle cx="120" cy="12.5" r="2" fill="currentColor"/>
+    </symbol>
+    <symbol id="lampara" viewBox="0 0 80 64">
+      <circle class="halo" cx="64" cy="20" r="16" fill="url(#gHalo)"/>
+      <path class="llama" d="M64 31 C58 25 59 17 64 6 C69 17 70 25 64 31 Z" fill="url(#gLlama)"/>
+      <path d="M10 41 Q8 31 20 31 H46 Q56 31 66 33.5 Q70 35 66 37.5 Q58 43 46 48 H24 Q10 48 10 41 Z" fill="url(#gBarro)" stroke="#5a3a12" stroke-width="1.2"/>
+      <ellipse cx="32" cy="32" rx="9" ry="2.3" fill="#5a3a12"/>
+      <path d="M11 38 Q1 35 5 28 Q8 25 12 32" fill="none" stroke="#7a4f17" stroke-width="3" stroke-linecap="round"/>
+      <path d="M20 40 H44" stroke="#f3d27a" stroke-width="1" opacity=".6"/>
+      <ellipse cx="36" cy="52" rx="20" ry="3" fill="#5a3a12" opacity=".3"/>
+    </symbol>
+    <radialGradient id="gHalo"><stop offset="0" stop-color="#ffd970" stop-opacity=".7"/><stop offset="1" stop-color="#ffd970" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gLlama" cx="50%" cy="75%" r="65%"><stop offset="0" stop-color="#fff6c8"/><stop offset=".45" stop-color="#ffcf4d"/><stop offset="1" stop-color="#e2731b"/></radialGradient>
+    <linearGradient id="gBarro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcab4a"/><stop offset="1" stop-color="#7a4f17"/></linearGradient>
+  </defs>
+</svg>
+
+<canvas id="celebracion"></canvas>
+
+<div class="marco">
+  <svg class="esquina ai"><use href="#esquina"/></svg>
+  <svg class="esquina ad"><use href="#esquina"/></svg>
+  <svg class="esquina bi"><use href="#esquina"/></svg>
+  <svg class="esquina bd"><use href="#esquina"/></svg>
+
+  <header>
+    <div class="cabecera-titulo">
+      <svg class="lampara" aria-hidden="true"><use href="#lampara"/></svg>
+      <h1 class="titulo" id="titulo">Bibledl</h1>
+      <svg class="lampara der" aria-hidden="true"><use href="#lampara"/></svg>
+    </div>
+    <p class="subtitulo">Adivina el personaje bíblico</p>
+    <div class="botones-cabecera">
+      <button class="sello" id="botonAyuda" title="Cómo jugar" aria-label="Cómo jugar">?</button>
+      <button class="sello purpura" id="botonStats" title="Estadísticas" aria-label="Estadísticas">✦</button>
+    </div>
+  </header>
+
+  <nav class="modos" id="modos"></nav>
+
+  <svg class="separador" aria-hidden="true"><use href="#olivo"/></svg>
+
+  <section class="tarjeta" id="zonaPista"></section>
+
+  <div class="buscador" id="buscador">
+    <input id="entrada" type="text" placeholder="Escribe un personaje…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Nombre del personaje">
+    <button class="placa" id="botonProbar">Probar</button>
+    <ul class="sugerencias" id="sugerencias" hidden></ul>
+  </div>
+
+  <div class="victoria" id="victoria" hidden></div>
+  <div class="tablero" id="tablero"></div>
+  <div class="chips" id="chips"></div>
+
+  <svg class="separador" aria-hidden="true"><use href="#olivo"/></svg>
+  <p class="pie">Nuevo personaje del día en <span class="reloj">--:--:--</span></p>
+</div>
+
+<!-- Ventana: Cómo jugar -->
+<div class="velo" id="modalAyuda">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloAyuda">
+    <button class="sello pequeno cerrar" data-cerrar aria-label="Cerrar">✕</button>
+    <h2 id="tituloAyuda">Cómo jugar</h2>
+    <p>Cada día hay un <b>personaje bíblico secreto</b>, el mismo para todos. Escribe el nombre de cualquier personaje, elígelo de la lista y descubre cuánto te acercas. Tienes intentos ilimitados.</p>
+    <h3>Modo Clásico</h3>
+    <p>Cada intento muestra una fila con cinco características comparadas con el personaje secreto: testamento, género, pueblo, si hizo milagros y oficio.</p>
+    <ul>
+      <li><i class="muestra verde"></i> <b>Verde oliva</b>: coincide exactamente.</li>
+      <li><i class="muestra amarillo"></i> <b>Ocre</b>: coincide en parte (comparte alguno de sus pueblos u oficios).</li>
+      <li><i class="muestra rojo"></i> <b>Granate</b>: no coincide.</li>
+      <li><i class="muestra neutro"></i> <b>Gris</b>: el oficio de uno de los dos es desconocido, así que no se puede comparar.</li>
+    </ul>
+    <h3>Otros modos</h3>
+    <ul>
+      <li><b>Versículo</b>: lee una cita y adivina quién la dijo o de quién habla. Cada fallo revela una pista.</li>
+      <li><b>Emoji</b>: unos emojis representan al personaje. Cada fallo revela uno más.</li>
+      <li><b>Infinito</b>: un personaje al azar, para jugar todas las veces que quieras.</li>
+    </ul>
+    <p>Si te quedas sin ideas, pulsa <b>«Me rindo»</b> para ver la respuesta (en los modos diarios, rendirse rompe la racha). Cada medianoche llegan personajes nuevos. ¡Buena suerte!</p>
+    <div class="centrado"><button class="placa" data-cerrar>¡A jugar!</button></div>
+  </div>
+</div>
+
+<!-- Ventana: Estadísticas -->
+<div class="velo" id="modalStats">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloStats">
+    <button class="sello pequeno cerrar" data-cerrar aria-label="Cerrar">✕</button>
+    <h2 id="tituloStats">Estadísticas</h2>
+    <div id="contenidoStats"></div>
+  </div>
+</div>
+
+<div class="aviso" id="aviso"></div>
+
+<script>
+/* ==========================================================
+   LISTA DE PERSONAJES
+   Cada línea: P(nombre, testamento, género, rol(es), época, pueblo(s),
+                milagros 1/0, oficio(s), emojis, versículo, referencia)
+   Si un dato tiene varios valores, se separan con |   (ej. "Pastor|Rey")
+   Los emojis se separan con espacios.
+   ========================================================== */
+function P(n, t, g, r, e, p, m, o, emo, v, ref) {
+  return { n: n, t: t, g: g, r: r.split("|"), e: e, p: p.split("|"), m: !!m, o: o.split("|"), emo: emo.split(" "), v: v, ref: ref };
+}
+
+const PERSONAJES = [
+  // ---------- ANTIGUO TESTAMENTO ----------
+  P("Adán", "Antiguo", "Hombre", "Primer humano", "Creación", "Primeros humanos", 0, "Agricultor", "🌳 🍎 🐍 🦴 🌿", "Entonces Jehová Dios formó al hombre del polvo de la tierra, y sopló en su nariz aliento de vida.", "Génesis 2:7"),
+  P("Eva", "Antiguo", "Mujer", "Primer humano", "Creación", "Primeros humanos", 0, "Desconocido", "🍎 🐍 🌳 👩 🍃", "Y dijo la mujer: La serpiente me engañó, y comí.", "Génesis 3:13"),
+  P("Caín", "Antiguo", "Hombre", "Hijo de Adán", "Creación", "Primeros humanos", 0, "Agricultor", "🌾 🍇 ❓ 🩸 🏃", "No sé. ¿Soy yo acaso guarda de mi hermano?", "Génesis 4:9"),
+  P("Abel", "Antiguo", "Hombre", "Hijo de Adán", "Creación", "Primeros humanos", 0, "Pastor", "🐑 🔥 🙏 🩸 🌿", "Por la fe ofreció a Dios más excelente sacrificio que su hermano.", "Hebreos 11:4"),
+  P("Noé", "Antiguo", "Hombre", "Patriarca", "Creación", "Primeros humanos", 0, "Agricultor", "🚢 🌧️ 🕊️ 🌈 🦒", "Hazte un arca de madera de gofer; harás aposentos en el arca, y la calafatearás con brea por dentro y por fuera.", "Génesis 6:14"),
+  P("Abraham", "Antiguo", "Hombre", "Patriarca", "Patriarcas", "Hebreo", 0, "Pastor", "⭐ 🏜️ ⛺ 🐏 🔪", "Y creyó a Jehová, y le fue contado por justicia.", "Génesis 15:6"),
+  P("Sara", "Antiguo", "Mujer", "Matriarca", "Patriarcas", "Hebreo", 0, "Desconocido", "😂 👵 👶 ⛺ ⭐", "Dios me ha hecho reír, y cualquiera que lo oyere, se reirá conmigo.", "Génesis 21:6"),
+  P("Isaac", "Antiguo", "Hombre", "Patriarca", "Patriarcas", "Hebreo", 0, "Pastor|Agricultor", "🪵 🔥 🐏 😂 👁️", "He aquí el fuego y la leña; mas ¿dónde está el cordero para el holocausto?", "Génesis 22:7"),
+  P("Rebeca", "Antiguo", "Mujer", "Matriarca", "Patriarcas", "Arameo", 0, "Desconocido", "🏺 💧 🐫 👰 👬", "También para tus camellos sacaré agua, hasta que acaben de beber.", "Génesis 24:19"),
+  P("Jacob", "Antiguo", "Hombre", "Patriarca", "Patriarcas", "Hebreo", 0, "Pastor", "🪜 👼 🤼 🐑 👬", "Ciertamente Jehová está en este lugar, y yo no lo sabía.", "Génesis 28:16"),
+  P("Raquel", "Antiguo", "Mujer", "Matriarca", "Patriarcas", "Arameo", 0, "Pastor", "🐑 💧 💕 ⏳ 👶", "Dame hijos, o si no, me muero.", "Génesis 30:1"),
+  P("José (hijo de Jacob)", "Antiguo", "Hombre", "Gobernante", "Patriarcas", "Hebreo", 0, "Administrador", "🧥 🕳️ 💭 🌾 👑", "Vosotros pensasteis mal contra mí, mas Dios lo encaminó a bien.", "Génesis 50:20"),
+  P("Moisés", "Antiguo", "Hombre", "Profeta", "Éxodo", "Israelita", 1, "Pastor", "🧺 🔥 🌊 🐍 📜", "¿Quién soy yo para que vaya a Faraón, y saque de Egipto a los hijos de Israel?", "Éxodo 3:11"),
+  P("Aarón", "Antiguo", "Hombre", "Sacerdote", "Éxodo", "Israelita", 1, "Sacerdote", "🪄 🐂 🌸 🕯️ 🗣️", "Yo lo eché en el fuego, y salió este becerro.", "Éxodo 32:24"),
+  P("Miriam", "Antiguo", "Mujer", "Profeta", "Éxodo", "Israelita", 0, "Desconocido", "👧 🧺 🌊 🥁 💃", "Cantad a Jehová, porque en extremo se ha engrandecido; ha echado en el mar al caballo y al jinete.", "Éxodo 15:21"),
+  P("Josué", "Antiguo", "Hombre", "Líder militar", "Éxodo", "Israelita", 1, "Soldado", "🎺 🧱 ☀️ ⚔️ 🏰", "Pero yo y mi casa serviremos a Jehová.", "Josué 24:15"),
+  P("Débora", "Antiguo", "Mujer", "Juez|Profeta", "Jueces", "Israelita", 0, "Juez", "🌴 ⚖️ 👩 ⚔️ 🎶", "Levántate, porque este es el día en que Jehová ha entregado a Sísara en tus manos.", "Jueces 4:14"),
+  P("Gedeón", "Antiguo", "Hombre", "Juez", "Jueces", "Israelita", 0, "Agricultor", "🐑 💧 🎺 🏺 🔥", "Jehová está contigo, varón esforzado y valiente.", "Jueces 6:12"),
+  P("Sansón", "Antiguo", "Hombre", "Juez", "Jueces", "Israelita", 1, "Desconocido", "💇‍♂️ 🦁 🍯 💪 🏛️", "Del devorador salió comida, y del fuerte salió dulzura.", "Jueces 14:14"),
+  P("Dalila", "Antiguo", "Mujer", "Ninguno", "Jueces", "Filisteo", 0, "Desconocido", "✂️ 💇‍♂️ 💰 💋 🤫", "¿Cómo dices: Yo te amo, siendo así que tu corazón no está conmigo?", "Jueces 16:15"),
+  P("Rut", "Antiguo", "Mujer", "Matriarca", "Jueces", "Moabita", 0, "Agricultor", "🌾 👵 🤝 🧺 💍", "Tu pueblo será mi pueblo, y tu Dios mi Dios.", "Rut 1:16"),
+  P("Samuel", "Antiguo", "Hombre", "Profeta|Juez", "Jueces", "Israelita", 0, "Sacerdote", "👶 🏛️ 👂 🫒 👑", "Habla, porque tu siervo oye.", "1 Samuel 3:10"),
+  P("Saúl", "Antiguo", "Hombre", "Rey", "Reyes", "Israelita", 0, "Rey", "🐴 👑 🎵 🗡️ 🏔️", "¿No soy yo hijo de Benjamín, de la más pequeña de las tribus de Israel?", "1 Samuel 9:21"),
+  P("David", "Antiguo", "Hombre", "Rey", "Reyes", "Israelita", 0, "Pastor|Músico|Rey", "🐑 🪨 🎵 👑 🦁", "Jehová es mi pastor; nada me faltará.", "Salmos 23:1"),
+  P("Goliat", "Antiguo", "Hombre", "Guerrero", "Reyes", "Filisteo", 0, "Soldado", "📏 🛡️ ⚔️ 🪨 😵", "Hoy yo he desafiado al campamento de Israel; dadme un hombre que pelee conmigo.", "1 Samuel 17:10"),
+  P("Salomón", "Antiguo", "Hombre", "Rey", "Reyes", "Israelita", 0, "Rey", "👑 🦉 👶 ⚖️ 🏛️", "Da, pues, a tu siervo corazón entendido para juzgar a tu pueblo, y para discernir entre lo bueno y lo malo.", "1 Reyes 3:9"),
+  P("Elías", "Antiguo", "Hombre", "Profeta", "Reyes", "Israelita", 1, "Desconocido", "🐦 🔥 🌧️ 🌪️ 🐎", "¿Hasta cuándo claudicaréis vosotros entre dos pensamientos?", "1 Reyes 18:21"),
+  P("Eliseo", "Antiguo", "Hombre", "Profeta", "Reyes", "Israelita", 1, "Agricultor", "🧥 🐂 🫒 🪓 🐻", "Te ruego que una doble porción de tu espíritu sea sobre mí.", "2 Reyes 2:9"),
+  P("Jezabel", "Antiguo", "Mujer", "Reina", "Reyes", "Fenicio", 0, "Reina", "👑 🍇 🗿 🪟 🐕", "Levántate, y come y alégrate; yo te daré la viña de Nabot de Jezreel.", "1 Reyes 21:7"),
+  P("Jonás", "Antiguo", "Hombre", "Profeta", "Reyes", "Israelita", 0, "Desconocido", "⛵ 🌊 🐋 🏙️ 🌿", "Tomadme y echadme al mar, y el mar se os aquietará.", "Jonás 1:12"),
+  P("Isaías", "Antiguo", "Hombre", "Profeta", "Reyes", "Israelita", 0, "Desconocido", "🔥 👄 👼 📜 🕊️", "Heme aquí, envíame a mí.", "Isaías 6:8"),
+  P("Jeremías", "Antiguo", "Hombre", "Profeta", "Exilio", "Israelita", 0, "Sacerdote", "😢 🏺 🕳️ ⛓️ 📜", "¡Ah, Señor Jehová! He aquí, no sé hablar, porque soy niño.", "Jeremías 1:6"),
+  P("Daniel", "Antiguo", "Hombre", "Profeta", "Exilio", "Israelita", 0, "Consejero real", "🦁 🕳️ 🙏 🥦 ✍️", "Mi Dios envió su ángel, el cual cerró la boca de los leones.", "Daniel 6:22"),
+  P("Ester", "Antiguo", "Mujer", "Reina", "Exilio", "Israelita", 0, "Reina", "👑 🏰 📜 🍷 🙏", "Y si perezco, que perezca.", "Ester 4:16"),
+  P("Nehemías", "Antiguo", "Hombre", "Gobernador", "Exilio", "Israelita", 0, "Copero", "🍷 🧱 🏰 🛠️ 🙏", "Venid, y edifiquemos el muro de Jerusalén.", "Nehemías 2:17"),
+
+  // ---------- NUEVO TESTAMENTO ----------
+  P("Jesús", "Nuevo", "Hombre", "Mesías", "Vida de Jesús", "Judío", 1, "Carpintero", "✝️ 🍞 🐟 🌊 🕊️", "Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí.", "Juan 14:6"),
+  P("María (madre de Jesús)", "Nuevo", "Mujer", "Familia de Jesús", "Vida de Jesús", "Judío", 0, "Desconocido", "👼 🙏 🐴 ⭐ 👶", "He aquí la sierva del Señor; hágase conmigo conforme a tu palabra.", "Lucas 1:38"),
+  P("José (esposo de María)", "Nuevo", "Hombre", "Familia de Jesús", "Vida de Jesús", "Judío", 0, "Carpintero", "🪚 💭 👼 🐴 👶", "Y despertando del sueño, hizo como el ángel del Señor le había mandado, y recibió a su mujer.", "Mateo 1:24"),
+  P("Isabel", "Nuevo", "Mujer", "Familia de Jesús", "Vida de Jesús", "Judío", 0, "Desconocido", "👵 🤰 👶 💃 🙌", "Bendita tú entre las mujeres, y bendito el fruto de tu vientre.", "Lucas 1:42"),
+  P("Zacarías", "Nuevo", "Hombre", "Sacerdote", "Vida de Jesús", "Judío", 0, "Sacerdote", "👴 🕯️ 👼 🤐 ✍️", "Bendito el Señor Dios de Israel, que ha visitado y redimido a su pueblo.", "Lucas 1:68"),
+  P("Simeón", "Nuevo", "Hombre", "Profeta", "Vida de Jesús", "Judío", 0, "Desconocido", "👴 🏛️ 👶 🙌 🕊️", "Ahora, Señor, despides a tu siervo en paz, conforme a tu palabra.", "Lucas 2:29"),
+  P("Ana (profetisa)", "Nuevo", "Mujer", "Profeta", "Vida de Jesús", "Judío", 0, "Desconocido", "👵 🏛️ 🙏 🌙 👶", "No se apartaba del templo, sirviendo de noche y de día con ayunos y oraciones.", "Lucas 2:37"),
+  P("Juan el Bautista", "Nuevo", "Hombre", "Profeta", "Vida de Jesús", "Judío", 0, "Desconocido", "💧 🦗 🍯 🐫 🏜️", "He aquí el Cordero de Dios, que quita el pecado del mundo.", "Juan 1:29"),
+  P("Pedro", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Pescador", "🎣 🌊 🐓 🔑 🪨", "Tú eres el Cristo, el Hijo del Dios viviente.", "Mateo 16:16"),
+  P("Andrés", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Pescador", "🎣 🐟 👬 👦 🍞", "Hemos hallado al Mesías.", "Juan 1:41"),
+  P("Santiago (hijo de Zebedeo)", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Pescador", "⚡ ⛵ 🎣 👬 🗡️", "Y les puso por sobrenombre Boanerges, esto es, Hijos del trueno.", "Marcos 3:17"),
+  P("Juan (apóstol)", "Nuevo", "Hombre", "Apóstol|Evangelista", "Vida de Jesús", "Judío", 1, "Pescador", "⚡ 🦅 ❤️ 🏝️ 📜", "Y uno de sus discípulos, al cual Jesús amaba, estaba recostado al lado de Jesús.", "Juan 13:23"),
+  P("Felipe (apóstol)", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Desconocido", "🙋‍♂️ 🍞 🐟 💰 👀", "Señor, muéstranos el Padre, y nos basta.", "Juan 14:8"),
+  P("Bartolomé (Natanael)", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Desconocido", "🌳 🤔 👀 🙋‍♂️ ✨", "¿De Nazaret puede salir algo de bueno?", "Juan 1:46"),
+  P("Mateo", "Nuevo", "Hombre", "Apóstol|Evangelista", "Vida de Jesús", "Judío", 1, "Recaudador", "💰 🧾 🍽️ 📜 👼", "Vio a un hombre sentado al banco de los tributos públicos, y le dijo: Sígueme. Y se levantó y le siguió.", "Mateo 9:9"),
+  P("Tomás", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Desconocido", "🤔 👀 ✋ 👬 🙏", "¡Señor mío, y Dios mío!", "Juan 20:28"),
+  P("Judas Iscariote", "Nuevo", "Hombre", "Apóstol", "Vida de Jesús", "Judío", 1, "Tesorero", "💰 😘 🍷 🌙 🏺", "¿Qué me queréis dar, y yo os lo entregaré?", "Mateo 26:15"),
+  P("Matías", "Nuevo", "Hombre", "Apóstol", "Iglesia primitiva", "Judío", 0, "Desconocido", "🎲 1️⃣ 2️⃣ 🙏 🗳️", "Y les echaron suertes, y la suerte cayó sobre él; y fue contado con los once apóstoles.", "Hechos 1:26"),
+  P("María Magdalena", "Nuevo", "Mujer", "Discípulo", "Vida de Jesús", "Judío", 0, "Desconocido", "🌅 🪦 😭 🌿 👀", "He visto al Señor.", "Juan 20:18"),
+  P("Lázaro", "Nuevo", "Hombre", "Discípulo", "Vida de Jesús", "Judío", 0, "Desconocido", "🪦 ⏳ 😢 🗣️ 🚶‍♂️", "¡Lázaro, ven fuera!", "Juan 11:43"),
+  P("Marta", "Nuevo", "Mujer", "Discípulo", "Vida de Jesús", "Judío", 0, "Desconocido", "🍲 🏠 😤 🧹 👂", "Señor, ¿no te da cuidado que mi hermana me deje servir sola?", "Lucas 10:40"),
+  P("María de Betania", "Nuevo", "Mujer", "Discípulo", "Vida de Jesús", "Judío", 0, "Desconocido", "👂 🏺 🌸 🦶 💇‍♀️", "María ha escogido la buena parte, la cual no le será quitada.", "Lucas 10:42"),
+  P("Zaqueo", "Nuevo", "Hombre", "Discípulo", "Vida de Jesús", "Judío", 0, "Recaudador", "🧍 🌳 💰 🏠 🍽️", "Zaqueo, date prisa, desciende, porque hoy es necesario que pose yo en tu casa.", "Lucas 19:5"),
+  P("Nicodemo", "Nuevo", "Hombre", "Fariseo|Discípulo", "Vida de Jesús", "Judío", 0, "Maestro de la Ley", "🌙 🗣️ 👶 💧 🌿", "¿Cómo puede un hombre nacer siendo viejo?", "Juan 3:4"),
+  P("Bartimeo", "Nuevo", "Hombre", "Discípulo", "Vida de Jesús", "Judío", 0, "Mendigo", "🧑‍🦯 🛣️ 🗣️ 🧥 👁️", "¡Jesús, Hijo de David, ten misericordia de mí!", "Marcos 10:47"),
+  P("Barrabás", "Nuevo", "Hombre", "Preso", "Vida de Jesús", "Judío", 0, "Bandido", "⛓️ 🗡️ 👥 🗳️ 🔓", "Estaba preso con sus compañeros de motín que habían cometido homicidio en una revuelta.", "Marcos 15:7"),
+  P("Caifás", "Nuevo", "Hombre", "Sacerdote", "Vida de Jesús", "Judío", 0, "Sacerdote", "🏛️ 🌙 ⚖️ 👕 💰", "Nos conviene que un hombre muera por el pueblo, y no que toda la nación perezca.", "Juan 11:50"),
+  P("Poncio Pilato", "Nuevo", "Hombre", "Gobernador", "Vida de Jesús", "Romano", 0, "Gobernador", "🏛️ ⚖️ 🧼 👐 🦅", "¿Qué es la verdad?", "Juan 18:38"),
+  P("Herodes el Grande", "Nuevo", "Hombre", "Rey", "Vida de Jesús", "Idumeo", 0, "Rey", "👑 ⭐ 🐫 👶 🗡️", "Id allá y averiguad con diligencia acerca del niño; y cuando le halléis, hacédmelo saber.", "Mateo 2:8"),
+  P("Herodes Antipas", "Nuevo", "Hombre", "Rey", "Vida de Jesús", "Idumeo", 0, "Rey", "🦊 👑 💃 🍽️ ⚖️", "Id, y decid a aquella zorra: He aquí, echo fuera demonios y hago curaciones hoy y mañana.", "Lucas 13:32"),
+  P("Herodías", "Nuevo", "Mujer", "Reina", "Vida de Jesús", "Idumeo", 0, "Desconocido", "💃 👧 🍽️ 😠 👑", "La cabeza de Juan el Bautista.", "Marcos 6:24"),
+  P("José de Arimatea", "Nuevo", "Hombre", "Discípulo|Consejero", "Vida de Jesús", "Judío", 0, "Desconocido", "💰 🏛️ 🧻 🪨 🌿", "Y quitándolo, lo envolvió en una sábana, y lo puso en un sepulcro abierto en una peña.", "Lucas 23:53"),
+  P("Simón de Cirene", "Nuevo", "Hombre", "Ninguno", "Vida de Jesús", "Cireneo", 0, "Desconocido", "🚶‍♂️ 🌾 ✝️ 💪 🛣️", "Tomaron a cierto hombre de Cirene, que venía del campo, y le pusieron encima la cruz para que la llevase tras Jesús.", "Lucas 23:26"),
+  P("Esteban", "Nuevo", "Hombre", "Diácono", "Iglesia primitiva", "Judío", 1, "Desconocido", "🪨 ☁️ 👀 🗣️ ✨", "He aquí, veo los cielos abiertos, y al Hijo del Hombre que está a la diestra de Dios.", "Hechos 7:56"),
+  P("Pablo", "Nuevo", "Hombre", "Apóstol|Misionero", "Iglesia primitiva", "Judío", 1, "Fabricante de tiendas", "🛣️ 💡 👁️ 📨 ⛓️", "Todo lo puedo en Cristo que me fortalece.", "Filipenses 4:13"),
+  P("Marcos", "Nuevo", "Hombre", "Evangelista|Misionero", "Iglesia primitiva", "Judío", 0, "Desconocido", "🦁 📜 ✍️ 🚢 🏃", "Toma a Marcos y tráele contigo, porque me es útil para el ministerio.", "2 Timoteo 4:11"),
+  P("Lucas", "Nuevo", "Hombre", "Evangelista|Misionero", "Iglesia primitiva", "Gentil", 0, "Médico", "🩺 🐂 ✍️ 📜 🚢", "Os saluda Lucas el médico amado.", "Colosenses 4:14"),
+  P("Bernabé", "Nuevo", "Hombre", "Misionero", "Iglesia primitiva", "Judío", 1, "Desconocido", "🏝️ 💰 🤝 🚢 😊", "Porque era varón bueno, y lleno del Espíritu Santo y de fe.", "Hechos 11:24"),
+  P("Timoteo", "Nuevo", "Hombre", "Misionero", "Iglesia primitiva", "Judío|Gentil", 0, "Desconocido", "👦 👵 📜 📨 ⛪", "Ninguno tenga en poco tu juventud.", "1 Timoteo 4:12"),
+  P("Silas", "Nuevo", "Hombre", "Misionero", "Iglesia primitiva", "Judío", 0, "Desconocido", "⛓️ 🌙 🎶 🌍 🔓", "Pero a medianoche, orando Pablo y Silas, cantaban himnos a Dios.", "Hechos 16:25"),
+  P("Cornelio", "Nuevo", "Hombre", "Centurión", "Iglesia primitiva", "Romano", 0, "Soldado", "🪖 🦅 🙏 👼 💧", "Piadoso y temeroso de Dios con toda su casa, y que hacía muchas limosnas al pueblo.", "Hechos 10:2"),
+  P("Ananías (de Damasco)", "Nuevo", "Hombre", "Discípulo", "Iglesia primitiva", "Judío", 1, "Desconocido", "😨 🏙️ 🙌 👁️ ✨", "Hermano Saulo, el Señor Jesús me ha enviado para que recibas la vista.", "Hechos 9:17"),
+  P("Lidia", "Nuevo", "Mujer", "Discípulo", "Iglesia primitiva", "Gentil", 0, "Comerciante", "🟣 👗 🏞️ 💧 🏠", "Una mujer vendedora de púrpura, de la ciudad de Tiatira; y el Señor abrió el corazón de ella.", "Hechos 16:14"),
+  P("Priscila", "Nuevo", "Mujer", "Misionero", "Iglesia primitiva", "Judío", 0, "Fabricante de tiendas", "⛺ 👫 📖 🏠 ⛪", "Saludad a Priscila y a Aquila, mis colaboradores en Cristo Jesús.", "Romanos 16:3"),
+  P("Tabita (Dorcas)", "Nuevo", "Mujer", "Discípulo", "Iglesia primitiva", "Judío", 0, "Costurera", "🧵 👗 🦌 😴 🙏", "Esta abundaba en buenas obras y en limosnas que hacía.", "Hechos 9:36")
+];
+
+/* ==========================================================
+   CONFIGURACIÓN DEL JUEGO
+   ========================================================== */
+const EPOCAS = ["Creación", "Patriarcas", "Éxodo", "Jueces", "Reyes", "Exilio", "Vida de Jesús", "Iglesia primitiva"];
+const COLUMNAS = [["t", "Testamento"], ["g", "Género"], ["p", "Pueblo"], ["m", "Milagros"], ["o", "Oficio"]];
+const MODOS = [
+  { id: "clasico", nombre: "Clásico", icono: "🏛️" },
+  { id: "versiculo", nombre: "Versículo", icono: "📜" },
+  { id: "emoji", nombre: "Emoji", icono: "😀" },
+  { id: "infinito", nombre: "Infinito", icono: "♾️" }
+];
+const SEMILLAS = { clasico: 20261019, versiculo: 7741, emoji: 93113 };
+const EMOJI_COLOR = { verde: "🟩", amarillo: "🟨", rojo: "🟥", neutro: "⬜" };
+const N = PERSONAJES.length;
+const MAPA = {};
+PERSONAJES.forEach(function (p) { MAPA[p.n] = p; });
+
+/* ---------- Utilidades ---------- */
+function quitarTildes(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+function el(tag, clase, texto) {
+  const e = document.createElement(tag);
+  if (clase) e.className = clase;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+function fechaClave(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+const HOY = fechaClave(new Date());
+const AYER = (function () { const d = new Date(); d.setDate(d.getDate() - 1); return fechaClave(d); })();
+
+// Número de día desde el lanzamiento (19 de octubre de 2026 = Bibledl #1)
+function numeroDia() {
+  const d = new Date();
+  return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2026, 9, 19)) / 86400000);
+}
+
+// Generador de números "aleatorios" con semilla: todos obtienen el mismo resultado
+function aleatorioConSemilla(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function ordenBarajado(semilla) {
+  const r = aleatorioConSemilla(semilla);
+  const idx = [];
+  for (let i = 0; i < N; i++) idx.push(i);
+  for (let i = N - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    const tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+  }
+  return idx;
+}
+// Personaje del día para cada modo (no se repite hasta pasar por todos)
+function secretoDelDia(modo) {
+  const n = numeroDia();
+  const ciclo = Math.floor(n / N);
+  const pos = ((n % N) + N) % N;
+  return ordenBarajado(SEMILLAS[modo] + ciclo * 977)[pos];
+}
+
+/* ---------- Guardado en el navegador ---------- */
+const CLAVE = "bibledl-v1";
+function cargar() {
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE));
+    if (d && d.dias && d.stats) return d;
+  } catch (e) {}
+  return { dias: {}, stats: {}, ayudaVista: false, modo: "clasico" };
+}
+function guardar() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) {}
+}
+const datos = cargar();
+// Borrar partidas de hace más de dos semanas
+Object.keys(datos.dias).sort().slice(0, -14).forEach(function (k) { delete datos.dias[k]; });
+
+function stats(modo) {
+  if (!datos.stats[modo]) datos.stats[modo] = { jugadas: 0, ganadas: 0, intentos: 0, racha: 0, mejorRacha: 0, ultimoGanado: null };
+  return datos.stats[modo];
+}
+
+/* ---------- Estado de cada partida ---------- */
+let modo = MODOS.some(function (m) { return m.id === datos.modo; }) ? datos.modo : "clasico";
+let infinito = null;
+
+function nuevoInfinito() {
+  const anterior = infinito ? infinito.secreto : -1;
+  let i;
+  do { i = Math.floor(Math.random() * N); } while (i === anterior && N > 1);
+  infinito = { secreto: i, intentos: [], ganado: false };
+}
+function partida(m) {
+  if (m === "infinito") {
+    if (!infinito) nuevoInfinito();
+    return infinito;
+  }
+  if (!datos.dias[HOY]) datos.dias[HOY] = {};
+  if (!datos.dias[HOY][m]) datos.dias[HOY][m] = { intentos: [], ganado: false };
+  const g = datos.dias[HOY][m];
+  g.intentos = g.intentos.filter(function (n) { return MAPA[n]; });
+  g.secreto = secretoDelDia(m);
+  return g;
+}
+
+/* ---------- Comparación de características ---------- */
+function comparar(intento, secreto, clave) {
+  if (intento === secreto) return { c: "verde" };
+  if (clave === "e") {
+    const a = EPOCAS.indexOf(intento.e), b = EPOCAS.indexOf(secreto.e);
+    if (a === b) return { c: "verde" };
+    return { c: "rojo", flecha: b > a ? "↑" : "↓" };
+  }
+  if (clave === "t" || clave === "g" || clave === "m") {
+    return { c: intento[clave] === secreto[clave] ? "verde" : "rojo" };
+  }
+  const A = intento[clave], B = secreto[clave];
+  if (clave === "o" && (A.indexOf("Desconocido") >= 0 || B.indexOf("Desconocido") >= 0)) return { c: "neutro" };
+  const comunes = A.filter(function (x) { return B.indexOf(x) >= 0; });
+  if (comunes.length === A.length && A.length === B.length) return { c: "verde" };
+  if (comunes.length > 0) return { c: "amarillo" };
+  return { c: "rojo" };
+}
+function textoDe(p, clave) {
+  if (clave === "m") return p.m ? "Sí" : "No";
+  const v = p[clave];
+  return Array.isArray(v) ? v.join(", ") : v;
+}
+
+// Oculta el nombre del personaje dentro del versículo
+function palabrasClave(nombre) {
+  return nombre.replace(/\(.*?\)/g, "").trim().split(/\s+/).filter(function (w) {
+    return w.length > 2 && ["el", "de", "la", "los"].indexOf(w.toLowerCase()) < 0;
+  });
+}
+function enmascarar(texto, p) {
+  let r = texto;
+  palabrasClave(p.n).forEach(function (w) {
+    const re = new RegExp("(^|[^\\p{L}])(" + w + ")(?=[^\\p{L}]|$)", "giu");
+    r = r.replace(re, "$1______");
+  });
+  return r;
+}
+function pistasVersiculo(p) {
+  return [
+    ["Testamento", p.t],
+    ["Época", p.e],
+    ["Rol", p.r.join(", ")],
+    ["Primera letra", "«" + quitarTildes(p.n).charAt(0).toUpperCase() + "»"],
+    ["Referencia", p.ref]
+  ];
+}
+
+/* ==========================================================
+   DIBUJAR LA PANTALLA
+   ========================================================== */
+const zonaPista = document.getElementById("zonaPista");
+const buscador = document.getElementById("buscador");
+const entrada = document.getElementById("entrada");
+const sugerencias = document.getElementById("sugerencias");
+const tablero = document.getElementById("tablero");
+const chips = document.getElementById("chips");
+const victoria = document.getElementById("victoria");
+
+function dibujarModos() {
+  const nav = document.getElementById("modos");
+  nav.innerHTML = "";
+  MODOS.forEach(function (m) {
+    const b = el("button", "modo" + (m.id === modo ? " activo" : ""));
+    let ganado = false;
+    if (m.id !== "infinito" && datos.dias[HOY] && datos.dias[HOY][m.id]) ganado = datos.dias[HOY][m.id].ganado;
+    b.innerHTML = "<span>" + m.icono + "</span> " + m.nombre + (ganado ? ' <span class="hecho">✓</span>' : "");
+    b.addEventListener("click", function () {
+      if (modo === m.id) return;
+      modo = m.id;
+      datos.modo = modo;
+      guardar();
+      entrada.value = "";
+      cerrarSugerencias();
+      dibujar(false);
+    });
+    nav.appendChild(b);
+  });
+}
+
+function dibujarPista(g, sec) {
+  const k = g.intentos.length;
+  const fin = g.ganado || g.rendido;
+  const textoIntentos = '<p class="intentos-texto">Intentos: ' + k + "</p>";
+  zonaPista.className = "tarjeta";
+
+  if (modo === "clasico" || modo === "infinito") {
+    const titulo = modo === "clasico" ? "Personaje del día" : "Modo Infinito";
+    const texto = modo === "clasico"
+      ? "Escribe el nombre de cualquier personaje bíblico. Las casillas te dirán cuánto te acercas."
+      : "Un personaje al azar, tantas veces como quieras.";
+    zonaPista.innerHTML =
+      "<h2>" + titulo + "</h2><p>" + texto + "</p>" +
+      '<div class="leyenda">' +
+      '<span><i class="muestra verde"></i>Coincide</span>' +
+      '<span><i class="muestra amarillo"></i>En parte</span>' +
+      '<span><i class="muestra rojo"></i>No coincide</span>' +
+      '<span><i class="muestra neutro"></i>Sin datos</span>' +
+      "</div>" +
+      textoIntentos +
+      (modo === "infinito" ? '<p><button class="placa" id="botonNuevo">Nuevo personaje</button></p>' : "");
+    if (modo === "infinito") {
+      document.getElementById("botonNuevo").addEventListener("click", function () {
+        if (!infinito.ganado && !infinito.rendido && infinito.intentos.length) avisar("Era " + PERSONAJES[infinito.secreto].n);
+        nuevoInfinito();
+        dibujar(false);
+      });
+    }
+  } else if (modo === "versiculo") {
+    zonaPista.className = "tarjeta rollo";
+    const fallos = g.ganado ? k - 1 : k;
+    const lista = pistasVersiculo(sec);
+    const visibles = fin ? lista.length : Math.min(fallos, lista.length);
+    let html = "<h2>¿Quién lo dijo o de quién se habla?</h2>" +
+      '<p class="cita">' + (fin ? sec.v : enmascarar(sec.v, sec)) + "</p>" +
+      (fin ? '<p class="referencia">' + sec.ref + "</p>" : "");
+    if (visibles > 0) {
+      html += '<ul class="pistas">';
+      for (let i = 0; i < visibles; i++) html += "<li><b>" + lista[i][0] + ":</b> " + lista[i][1] + "</li>";
+      html += "</ul>";
+    }
+    if (!fin && visibles < lista.length) {
+      html += '<p class="proxima-pista">' + (visibles === 0 ? "Cada fallo revela una pista." : "Otra pista con el próximo fallo.") + "</p>";
+    }
+    zonaPista.innerHTML = html + textoIntentos;
+  } else if (modo === "emoji") {
+    const fallos = fin ? sec.emo.length : k;
+    const visibles = Math.min(1 + fallos, sec.emo.length);
+    let html = "<h2>¿Qué personaje representan estos emojis?</h2><div class=\"emojis\">";
+    sec.emo.forEach(function (e, i) {
+      html += i < visibles ? '<span class="emoji">' + e + "</span>" : '<span class="emoji oculto">?</span>';
+    });
+    html += "</div>";
+    if (!fin && visibles < sec.emo.length) html += '<p class="proxima-pista">Cada fallo revela un emoji más.</p>';
+    zonaPista.innerHTML = html + textoIntentos;
+  }
+  if (!fin) {
+    const p = el("p");
+    const b = el("button", "placa secundaria", "🏳️ Me rindo");
+    b.addEventListener("click", rendirse);
+    p.appendChild(b);
+    zonaPista.appendChild(p);
+  }
+}
+
+function dibujarTablero(g, sec, animar) {
+  tablero.innerHTML = "";
+  if ((modo !== "clasico" && modo !== "infinito") || g.intentos.length === 0) { tablero.hidden = true; return; }
+  tablero.hidden = false;
+
+  const cab = el("div", "fila");
+  cab.appendChild(el("div", "titulo-col", "Personaje"));
+  COLUMNAS.forEach(function (c) { cab.appendChild(el("div", "titulo-col", c[1])); });
+  tablero.appendChild(cab);
+
+  g.intentos.slice().reverse().forEach(function (nombre, fila) {
+    const p = MAPA[nombre];
+    const f = el("div", "fila");
+    const partes = nombre.match(/^(.*?)\s*(\(.*\))?$/);
+    const celdaNombre = el("div", "celda nombre");
+    celdaNombre.innerHTML = '<span class="txt">' + partes[1] + (partes[2] ? "<small>" + partes[2] + "</small>" : "") + "</span>";
+    if (animar && fila === 0) { celdaNombre.classList.add("revela"); celdaNombre.style.setProperty("--i", 0); }
+    f.appendChild(celdaNombre);
+
+    COLUMNAS.forEach(function (c, j) {
+      const r = comparar(p, sec, c[0]);
+      const celda = el("div", "celda " + r.c);
+      celda.innerHTML = (r.flecha ? '<span class="flecha">' + r.flecha + "</span>" : "") + '<span class="txt">' + textoDe(p, c[0]) + "</span>";
+      if (animar && fila === 0) { celda.classList.add("revela"); celda.style.setProperty("--i", j + 1); }
+      f.appendChild(celda);
+    });
+    tablero.appendChild(f);
+  });
+}
+
+function dibujarChips(g) {
+  chips.innerHTML = "";
+  if (modo === "clasico" || modo === "infinito") return;
+  g.intentos.slice().reverse().forEach(function (nombre) {
+    const acierto = PERSONAJES.indexOf(MAPA[nombre]) === g.secreto;
+    chips.appendChild(el("span", "chip" + (acierto ? " bien" : ""), (acierto ? "✓ " : "✗ ") + nombre));
+  });
+}
+
+function dibujarVictoria(g, sec) {
+  if (!g.ganado && !g.rendido) { victoria.hidden = true; victoria.innerHTML = ""; return; }
+  const k = g.intentos.length;
+  if (!g.ganado) {
+    victoria.innerHTML =
+      '<div class="ornamento">✦ ✦ ✦</div>' +
+      "<h2>El personaje era</h2>" +
+      '<p class="ganador">' + sec.n + "</p>" +
+      "<p>Te rendiste tras <b>" + k + "</b> " + (k === 1 ? "intento" : "intentos") + ". ¡A la próxima lo consigues!</p>" +
+      "<blockquote>«" + sec.v + "»<cite>" + sec.ref + "</cite></blockquote>" +
+      (modo === "infinito"
+        ? '<div class="acciones"><button class="placa" id="botonOtro">Otro personaje</button></div>'
+        : '<p class="cuenta">Próximo personaje en <span class="reloj">--:--:--</span></p>');
+    victoria.hidden = false;
+    if (modo === "infinito") {
+      document.getElementById("botonOtro").addEventListener("click", function () { nuevoInfinito(); dibujar(false); });
+    }
+    actualizarReloj();
+    return;
+  }
+  victoria.innerHTML =
+    '<div class="ornamento">✦ ✦ ✦</div>' +
+    "<h2>¡Lo has hallado!</h2>" +
+    '<p class="ganador">' + sec.n + "</p>" +
+    "<p>Lo encontraste en <b>" + k + "</b> " + (k === 1 ? "intento" : "intentos") + ".</p>" +
+    "<blockquote>«" + sec.v + "»<cite>" + sec.ref + "</cite></blockquote>" +
+    '<div class="acciones"><button class="placa" id="botonCompartir">Compartir resultado</button>' +
+    (modo === "infinito" ? '<button class="placa" id="botonOtro">Otro personaje</button>' : "") + "</div>" +
+    (modo !== "infinito" ? '<p class="cuenta">Próximo personaje en <span class="reloj">--:--:--</span></p>' : "");
+  victoria.hidden = false;
+  document.getElementById("botonCompartir").addEventListener("click", compartir);
+  if (modo === "infinito") {
+    document.getElementById("botonOtro").addEventListener("click", function () { nuevoInfinito(); dibujar(false); });
+  }
+  actualizarReloj();
+}
+
+function dibujar(animar) {
+  const g = partida(modo);
+  const sec = PERSONAJES[g.secreto];
+  dibujarModos();
+  dibujarPista(g, sec);
+  buscador.hidden = g.ganado || g.rendido;
+  buscador.style.display = (g.ganado || g.rendido) ? "none" : "";
+  dibujarTablero(g, sec, animar);
+  dibujarChips(g);
+  if (!(animar && g.ganado)) dibujarVictoria(g, sec);
+  else victoria.hidden = true;
+}
+
+/* ==========================================================
+   RENDIRSE (revela el personaje)
+   ========================================================== */
+function rendirse() {
+  const g = partida(modo);
+  if (g.ganado || g.rendido) return;
+  if (!confirm("¿Seguro que quieres rendirte y ver el personaje?")) return;
+  g.rendido = true;
+  const s = stats(modo);
+  if (g.intentos.length === 0) s.jugadas++;
+  if (modo !== "infinito") s.racha = 0;
+  guardar();
+  entrada.value = "";
+  cerrarSugerencias();
+  dibujar(false);
+  victoria.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ==========================================================
+   INTENTAR UN PERSONAJE
+   ========================================================== */
+function intentar(nombre) {
+  const g = partida(modo);
+  if (g.ganado || g.rendido || !MAPA[nombre] || g.intentos.indexOf(nombre) >= 0) return;
+  g.intentos.push(nombre);
+  const s = stats(modo);
+  if (g.intentos.length === 1) s.jugadas++;
+
+  const acierto = PERSONAJES.indexOf(MAPA[nombre]) === g.secreto;
+  if (acierto) {
+    g.ganado = true;
+    s.ganadas++;
+    s.intentos += g.intentos.length;
+    if (modo !== "infinito") {
+      if (s.ultimoGanado === AYER) s.racha++;
+      else if (s.ultimoGanado !== HOY) s.racha = 1;
+      s.ultimoGanado = HOY;
+      s.mejorRacha = Math.max(s.mejorRacha, s.racha);
+    }
+  }
+  guardar();
+  entrada.value = "";
+  cerrarSugerencias();
+  dibujar(true);
+
+  if (acierto) {
+    const espera = (modo === "clasico" || modo === "infinito") ? (COLUMNAS.length + 1) * 300 + 400 : 300;
+    const modoActual = modo;
+    setTimeout(function () {
+      if (modo !== modoActual) return;
+      const gg = partida(modo);
+      dibujarVictoria(gg, PERSONAJES[gg.secreto]);
+      celebrar();
+      victoria.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, espera);
+  }
+}
+
+/* ---------- Autocompletado ---------- */
+let resultados = [];
+let seleccion = 0;
+
+function cerrarSugerencias() { sugerencias.hidden = true; sugerencias.innerHTML = ""; resultados = []; }
+
+function actualizarSugerencias() {
+  const q = quitarTildes(entrada.value.trim());
+  if (!q) { cerrarSugerencias(); return; }
+  const g = partida(modo);
+  resultados = PERSONAJES.filter(function (p) {
+    return g.intentos.indexOf(p.n) < 0 && quitarTildes(p.n).indexOf(q) >= 0;
+  }).sort(function (a, b) {
+    const ea = quitarTildes(a.n).indexOf(q) === 0 ? 0 : 1;
+    const eb = quitarTildes(b.n).indexOf(q) === 0 ? 0 : 1;
+    return ea - eb || a.n.localeCompare(b.n, "es");
+  }).slice(0, 8);
+  seleccion = 0;
+  sugerencias.innerHTML = "";
+  if (!resultados.length) {
+    sugerencias.appendChild(el("li", "vacio", "Ningún personaje coincide (o ya lo has probado)"));
+  } else {
+    resultados.forEach(function (p, i) {
+      const li = el("li", i === 0 ? "activa" : "");
+      li.innerHTML = "<span>" + p.n + "</span><small>" + (p.t === "Antiguo" ? "A.T." : "N.T.") + "</small>";
+      li.addEventListener("mousedown", function (e) { e.preventDefault(); intentar(p.n); });
+      sugerencias.appendChild(li);
+    });
+  }
+  sugerencias.hidden = false;
+}
+function marcarSeleccion() {
+  Array.prototype.forEach.call(sugerencias.children, function (li, i) {
+    li.classList.toggle("activa", i === seleccion);
+    if (i === seleccion) li.scrollIntoView({ block: "nearest" });
+  });
+}
+function enviarSeleccion() {
+  if (resultados.length) intentar(resultados[seleccion].n);
+  else if (entrada.value.trim()) avisar("Elige un personaje de la lista");
+}
+
+entrada.addEventListener("input", actualizarSugerencias);
+entrada.addEventListener("focus", actualizarSugerencias);
+entrada.addEventListener("blur", function () { setTimeout(cerrarSugerencias, 150); });
+entrada.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowDown" && resultados.length) { e.preventDefault(); seleccion = (seleccion + 1) % resultados.length; marcarSeleccion(); }
+  else if (e.key === "ArrowUp" && resultados.length) { e.preventDefault(); seleccion = (seleccion - 1 + resultados.length) % resultados.length; marcarSeleccion(); }
+  else if (e.key === "Enter") { e.preventDefault(); enviarSeleccion(); }
+  else if (e.key === "Escape") { cerrarSugerencias(); }
+});
+document.getElementById("botonProbar").addEventListener("click", function () {
+  if (!resultados.length) actualizarSugerencias();
+  enviarSeleccion();
+});
+
+/* ==========================================================
+   COMPARTIR, AVISOS Y CUENTA ATRÁS
+   ========================================================== */
+function compartir() {
+  const g = partida(modo);
+  const sec = PERSONAJES[g.secreto];
+  const k = g.intentos.length;
+  const m = MODOS.filter(function (x) { return x.id === modo; })[0];
+  let txt = modo === "infinito" ? "Bibledl ♾️ Infinito\n" : "Bibledl #" + (numeroDia() + 1) + " · " + m.icono + " " + m.nombre + "\n";
+  txt += "Lo encontré en " + k + " " + (k === 1 ? "intento" : "intentos") + " 🕊️\n";
+  if (modo === "clasico" || modo === "infinito") {
+    let filas = g.intentos.map(function (n) {
+      return COLUMNAS.map(function (c) { return EMOJI_COLOR[comparar(MAPA[n], sec, c[0]).c]; }).join("");
+    });
+    if (filas.length > 8) filas = filas.slice(0, 6).concat(["⋮"], filas.slice(-1));
+    txt += filas.join("\n");
+  } else {
+    txt += "🟥".repeat(k - 1) + "🟩";
+  }
+  if (location.protocol.indexOf("http") === 0) txt += "\n" + location.href.split("#")[0];
+  copiar(txt);
+}
+function copiar(txt) {
+  function respaldo() {
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); avisar("¡Resultado copiado!"); } catch (e) { avisar("No se pudo copiar"); }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { avisar("¡Resultado copiado!"); }, respaldo);
+  } else {
+    respaldo();
+  }
+}
+let temporizadorAviso = null;
+function avisar(texto) {
+  const a = document.getElementById("aviso");
+  a.textContent = texto;
+  a.classList.add("ver");
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(function () { a.classList.remove("ver"); }, 2400);
+}
+function actualizarReloj() {
+  if (fechaClave(new Date()) !== HOY) { location.reload(); return; }
+  const ahora = new Date();
+  const medianoche = new Date(ahora);
+  medianoche.setHours(24, 0, 0, 0);
+  const s = Math.max(0, Math.floor((medianoche - ahora) / 1000));
+  const t = [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+  document.querySelectorAll(".reloj").forEach(function (e) { e.textContent = t; });
+}
+setInterval(actualizarReloj, 1000);
+
+/* ==========================================================
+   CELEBRACIÓN (destellos dorados y hojas de olivo)
+   ========================================================== */
+function celebrar() {
+  const titulo = document.getElementById("titulo");
+  titulo.classList.remove("resplandor");
+  void titulo.offsetWidth;
+  titulo.classList.add("resplandor");
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const cv = document.getElementById("celebracion");
+  const ctx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.width = window.innerWidth * dpr;
+  const H = cv.height = window.innerHeight * dpr;
+  const dorados = ["#f6e08f", "#e8c25a", "#c9a227", "#fff3c4", "#d4a93a"];
+  const piezas = [];
+  for (let i = 0; i < 150; i++) {
+    piezas.push({
+      x: Math.random() * W,
+      y: -Math.random() * H * 0.7,
+      vy: (1.4 + Math.random() * 2.4) * dpr,
+      vx: (Math.random() - 0.5) * dpr,
+      r: (2 + Math.random() * 3.5) * dpr,
+      a: Math.random() * Math.PI * 2,
+      va: (Math.random() - 0.5) * 0.15,
+      hoja: Math.random() < 0.22,
+      color: dorados[Math.floor(Math.random() * dorados.length)],
+      fase: Math.random() * 6
+    });
+  }
+  const inicio = performance.now();
+  function paso(t) {
+    const dt = t - inicio;
+    ctx.clearRect(0, 0, W, H);
+    const alfa = dt > 3200 ? Math.max(0, 1 - (dt - 3200) / 1000) : 1;
+    piezas.forEach(function (p) {
+      p.y += p.vy;
+      p.x += p.vx + Math.sin(p.fase + p.y / (60 * dpr)) * 0.6 * dpr;
+      p.a += p.va;
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.a);
+      if (p.hoja) {
+        ctx.fillStyle = "#6f7d35";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.r * 2.4, p.r * 0.85, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = "rgba(255, 220, 120, .9)";
+        ctx.shadowBlur = 6 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(0, -p.r * 1.6);
+        ctx.lineTo(p.r * 0.5, 0);
+        ctx.lineTo(0, p.r * 1.6);
+        ctx.lineTo(-p.r * 0.5, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+    if (dt < 4300) requestAnimationFrame(paso);
+    else ctx.clearRect(0, 0, W, H);
+  }
+  requestAnimationFrame(paso);
+}
+
+/* ==========================================================
+   VENTANAS
+   ========================================================== */
+function abrirModal(id) { document.getElementById(id).classList.add("abierto"); }
+function cerrarModales() { document.querySelectorAll(".velo").forEach(function (v) { v.classList.remove("abierto"); }); }
+document.querySelectorAll(".velo").forEach(function (v) {
+  v.addEventListener("click", function (e) { if (e.target === v || e.target.hasAttribute("data-cerrar")) cerrarModales(); });
+});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") cerrarModales(); });
+document.getElementById("botonAyuda").addEventListener("click", function () { abrirModal("modalAyuda"); });
+document.getElementById("botonStats").addEventListener("click", function () { dibujarStats(); abrirModal("modalStats"); });
+
+function dibujarStats() {
+  const sc = stats("clasico");
+  const racha = (sc.ultimoGanado === HOY || sc.ultimoGanado === AYER) ? sc.racha : 0;
+  let h = '<div class="estadisticas">' +
+    '<div class="stat-bloque"><span class="num">' + racha + "</span>Racha actual</div>" +
+    '<div class="stat-bloque"><span class="num">' + sc.mejorRacha + "</span>Mejor racha</div></div>" +
+    '<table class="tabla-stats"><thead><tr><th>Modo</th><th>Partidas</th><th>Aciertos</th><th>Media</th></tr></thead><tbody>';
+  MODOS.forEach(function (m) {
+    const s = stats(m.id);
+    const media = s.ganadas ? (s.intentos / s.ganadas).toFixed(1).replace(".", ",") : "–";
+    h += "<tr><td>" + m.icono + " " + m.nombre + "</td><td>" + s.jugadas + "</td><td>" + s.ganadas + "</td><td>" + media + "</td></tr>";
+  });
+  h += '</tbody></table><p class="nota">La racha cuenta los días seguidos que aciertas el modo Clásico. «Media» es el promedio de intentos por acierto.</p>';
+  document.getElementById("contenidoStats").innerHTML = h;
+}
+
+/* ==========================================================
+   INICIO
+   ========================================================== */
+dibujar(false);
+actualizarReloj();
+if (!datos.ayudaVista) {
+  abrirModal("modalAyuda");
+  datos.ayudaVista = true;
+  guardar();
+}
+</script>
+</body>
+</html>
